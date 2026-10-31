@@ -1,0 +1,232 @@
+You are helping us simulate network ATTACK traffic for a real research network. We will use your records to train an intrusion detection system, so they need to be realistic and follow this network's rules exactly. You only generate attack traffic, never normal traffic.
+
+1. THE NETWORK
+AmLight is an international research-and-education network run by FIU/CIARA, linking the United States, Latin America, the Caribbean, and South Africa (12 sites, 24+ long-haul 100-Gbps links, 4.9 Tbps total).
+Traffic is recorded at a monitoring point with INT (In-band Network Telemetry), which adds hop count, hop latency, and switch queue occupancy to each flow. We only see traffic coming IN to one monitored host, anon_ip_2. Replies from that host are never seen, so every flow has zero backward packets.
+The recording is split into 13 timeframes (1 to 13). Each record is one flow in one timeframe, identified by timeframe, protocol, source IP (ip_a), destination IP (ip_b), source port (port_a), and destination port (port_b).
+
+2. WHAT THE ATTACK TRAFFIC LOOKS LIKE HERE (learn the attack from this, do not copy it)
+These numbers come from real attack traffic in this network. Use them to learn the scales, units, and formats of each field. Attack traffic here comes from 1 host, always from source port 443, sending to 8 high ports on anon_ip_2 (49798 to 49805). About 16% of attack flows are a single packet with duration 0; the rest are long flows of thousands of packets. The target_* and source_* numbers were measured while the attack was running.
+- pkts_fwd: typical 2288 to 18588, middle 9726, range 1 to 24139 (max 97453)
+- bytes_fwd: typical 3330690 to 27062692, middle 14160292, range 90 to 35141114 (max 141881376)
+- duration: typical 147.4 to 998.1, middle 604.5, range 0 to 998.6 (max 999); 0 in 16%
+- pkt_size_std: typical 1.076 to 13.37, middle 9.017, range 0 to 26.93 (max 683); 0 in 24%
+- pkt_size_min: typical 90 to 1309, middle 90, range 76 to 1456 (max 1456)
+- pkt_size_max: typical 1456 to 1456, middle 1456, range 90 to 1456 (max 1456)
+- mean_hop_count: typical 1 to 1, middle 1, range 1 to 1 (max 1)
+- mean_hop_latency: typical 1389 to 1390, middle 1389, range 1337 to 1390 (max 1437)
+- mean_iat_int_ns: typical 29057 to 36571, middle 29535, range 28523 to 96974 (max 175400847); NA in 16%
+- iat_std_int_ns: typical 143756 to 633004, middle 160015, range 138332 to 4143281 (max 110089291); NA in 16%
+- iat_min_int_ns: typical 12 to 18, middle 14, range 10 to 20 (max 175400847); NA in 16%
+- iat_max_int_ns: typical 1383269 to 59890404, middle 7508421, range 1125435 to 461466709 (max 902171214); NA in 16%
+- latency_min: typical 1340 to 1380, middle 1378, range 1334 to 1381 (max 1437)
+- latency_max: typical 1472 to 1514, middle 1497, range 1337 to 1545 (max 45440)
+- latency_std: typical 8.236 to 9.013, middle 8.693, range 0 to 9.73 (max 849.3); 0 in 16%
+- syn_count_fwd: typical 0 to 0, middle 0, range 0 to 0 (max 1); 0 in 100%
+- ack_count_fwd: typical 2288 to 18588, middle 9726, range 1 to 24139 (max 97453)
+- fin_count_fwd: typical 0 to 0, middle 0, range 0 to 0 (max 0); 0 in 100%
+- rst_count_fwd: typical 0 to 0, middle 0, range 0 to 0 (max 0); 0 in 100%
+- psh_count_fwd: typical 100 to 792, middle 412, range 1 to 1067 (max 3976); 0 in 2%
+- urg_count_fwd: typical 0 to 0, middle 0, range 0 to 0 (max 0); 0 in 100%
+- small_pkt_fraction_total: typical 0 to 0.0001528, middle 0.00004237, range 0 to 1 (max 1); 0 in 44%
+- tiny_pkt_fraction_total: typical 0 to 0, middle 0, range 0 to 0 (max 0); 0 in 100%
+- queue_occupancy_mean: typical 9.358 to 9.498, middle 9.433, range 5 to 11 (max 31)
+- queue_occupancy_std: typical 3.981 to 4.13, middle 4.069, range 0 to 4.227 (max 6.149); 0 in 16%
+- queue_occupancy_max: typical 32 to 38, middle 37, range 5 to 42 (max 52)
+- truncated_udp_fraction: typical 0 to 0, middle 0, range 0 to 0 (max 0); 0 in 100%
+- target_service_flow_count: typical 81 to 95, middle 87, range 39 to 102 (max 102)
+- target_service_unique_peer_ips: typical 1 to 1, middle 1, range 1 to 1 (max 1)
+- target_service_unique_peer_ports: typical 1 to 1, middle 1, range 1 to 1 (max 1)
+- target_service_pkts_total: typical 988217 to 1054387, middle 1018326, range 401683 to 1088906 (max 1098650)
+- target_service_bytes_total: typical 1438703258 to 1535051986, middle 1482550037, range 584800462 to 1585307206 (max 1599461794)
+- target_ip_flow_count: typical 780 to 789, middle 785, range 340 to 800 (max 800)
+- target_ip_unique_peer_ips: typical 14 to 18, middle 15, range 13 to 18 (max 18)
+- target_ip_unique_peer_ports: typical 2 to 4, middle 3, range 2 to 5 (max 5)
+- target_ip_unique_services: typical 30 to 32, middle 31, range 28 to 34 (max 34)
+- target_ip_pkts_total: typical 8107644 to 8259226, middle 8176265, range 3134263 to 8456424 (max 8456424)
+- target_ip_bytes_total: typical 11803486710 to 12024269836, middle 11903499381, range 4562931101 to 12311343188 (max 12311343188)
+- source_flow_count: typical 712 to 725, middle 716, range 290 to 736 (max 736)
+- source_unique_target_ips: typical 1 to 1, middle 1, range 1 to 1 (max 1)
+- source_unique_target_ports: typical 8 to 8, middle 8, range 8 to 8 (max 8)
+- source_unique_peer_ports: typical 1 to 1, middle 1, range 1 to 1 (max 1)
+- source_pkts_total: typical 8107534 to 8259131, middle 8176175, range 3134158 to 8456328 (max 8456328)
+- source_bytes_total: typical 11803453786 to 12024250804, middle 11903473919, range 4562907433 to 12311316809 (max 12311316809)
+
+3. THE ATTACK TO SIMULATE
+A single outside machine, anon_ip_21, runs a controlled denial-of-service (DoS) attack against anon_ip_2 during timeframes 5 to 11. Timeframes 5-10 are the full attack; timeframe 11 is where it winds down. All attack traffic comes from this one source, which can send many flows to several ports on the target.
+The attack is a TCP ACK/PSH flood: the attacker sends a high, steady stream of TCP packets with the ACK flag set, some also with PSH, without ever doing a TCP handshake. The target has to check every packet against a connection that does not exist, which wears it down. Flood packets usually carry large payloads to also eat bandwidth. SYN, FIN, RST, and URG play no part in this attack.
+Use the attack statistics above to choose realistic values for each record.
+
+4. TEN REAL ATTACK RECORDS FROM THIS NETWORK (learn from these, do not copy them)
+Below are 10 real attack flows from this network, one JSON record per line, written in exactly the format you must reply in. Together they cover all 8 attacked ports, the full attack (timeframes 5-10), the wind-down (timeframe 11), long flows, and single-packet flows.
+Use them to learn how the fields fit together inside one record: how bytes relate to packets, how duration relates to the time-between-packets fields, what single-packet flows look like, and which values are null.
+The target_* and source_* fields describe the timeframe each record comes from, so they change from one timeframe to the next.
+Do not copy any record and do not reuse its exact numbers. Your records must be new flows that could appear next to these in the same capture.
+{"timeframe_id":6,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49802,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":1,"bytes_fwd":90,"duration":0.0,"pkt_size_std":0.0,"pkt_size_min":90,"pkt_size_max":90,"mean_hop_count":1.0,"mean_hop_latency":1335.0,"mean_iat_int_ns":null,"iat_std_int_ns":null,"iat_min_int_ns":null,"iat_max_int_ns":null,"latency_min":1335.0,"latency_max":1335.0,"latency_std":0.0,"syn_count_fwd":0,"ack_count_fwd":1,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":1,"urg_count_fwd":0,"small_pkt_fraction_total":1.0,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":3.0,"queue_occupancy_std":0.0,"queue_occupancy_max":3.0,"truncated_udp_fraction":0.0,"target_service_flow_count":100,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":1018326,"target_service_bytes_total":1482550037,"target_ip_flow_count":800,"target_ip_unique_peer_ips":16,"target_ip_unique_peer_ports":3,"target_ip_unique_services":32,"target_ip_pkts_total":8259226,"target_ip_bytes_total":12024269836,"source_flow_count":736,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8259131,"source_bytes_total":12024250804,"pkts_total":1,"bytes_total":90,"mean_pkt_size":90.0,"bytes_per_pkt_total":90.0,"bytes_per_pkt_fwd":90.0,"pps_fwd":null,"pps_bwd":null,"pps_total":null,"bps_fwd":null,"bps_bwd":null,"bps_total":null,"fwd_only_duration":0.0,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":9.82003798390692e-07,"flow_share_of_target_service_bytes":6.070621412692326e-08,"flow_share_of_target_ip_pkts":1.2107672074840913e-07,"flow_share_of_target_ip_bytes":7.48486196896089e-09,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":1.0,"psh_fraction":1.0,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"6|6|anon_ip_21|anon_ip_2|443|49802","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":8,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49804,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":23598,"bytes_fwd":34357161,"duration":680.9853780269623,"pkt_size_std":7.891861159655429,"pkt_size_min":268,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.247224341046,"mean_iat_int_ns":28860.13573759376,"iat_std_int_ns":163843.20165793807,"iat_min_int_ns":10.0,"iat_max_int_ns":8091566.0,"latency_min":1379.0,"latency_max":1497.0,"latency_std":8.389295170837496,"syn_count_fwd":0,"ack_count_fwd":23598,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":1006,"urg_count_fwd":0,"small_pkt_fraction_total":0.0,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.43020595,"queue_occupancy_std":4.055710803024274,"queue_occupancy_max":40.0,"truncated_udp_fraction":0.0,"target_service_flow_count":81,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":1013862,"target_service_bytes_total":1476057462,"target_ip_flow_count":780,"target_ip_unique_peer_ips":14,"target_ip_unique_peer_ports":3,"target_ip_unique_services":28,"target_ip_pkts_total":8176265,"target_ip_bytes_total":11903499381,"source_flow_count":719,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8176175,"source_bytes_total":11903473919,"pkts_total":23598,"bytes_total":34357161,"mean_pkt_size":1455.9352911263666,"bytes_per_pkt_total":1455.9352911263666,"bytes_per_pkt_fwd":1455.9352911263666,"pps_fwd":34.652726418841965,"pps_bwd":0.0,"pps_total":34.652726418841965,"bps_fwd":50452.127326939015,"bps_bwd":0.0,"bps_total":50452.127326939015,"fwd_only_duration":680.9853780269623,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.023275357,"flow_share_of_target_service_bytes":0.023276303,"flow_share_of_target_ip_pkts":0.002886159,"flow_share_of_target_ip_bytes":0.002886308,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042630731,"psh_fraction":0.042630731,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"8|6|anon_ip_21|anon_ip_2|443|49804","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":11,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49800,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":16464,"bytes_fwd":23968689,"duration":998.5684490203856,"pkt_size_std":14.949209338350428,"pkt_size_min":88,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.591326003766,"mean_iat_int_ns":29113.42291337626,"iat_std_int_ns":149904.92880500547,"iat_min_int_ns":10.0,"iat_max_int_ns":5989929.0,"latency_min":1367.0,"latency_max":1510.0,"latency_std":9.051797201625176,"syn_count_fwd":0,"ack_count_fwd":16464,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":700,"urg_count_fwd":0,"small_pkt_fraction_total":6.073858114674441e-05,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.456295936,"queue_occupancy_std":4.099950183081216,"queue_occupancy_max":38.0,"truncated_udp_fraction":0.0,"target_service_flow_count":37,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":398187,"target_service_bytes_total":579705031,"target_ip_flow_count":340,"target_ip_unique_peer_ips":14,"target_ip_unique_peer_ports":3,"target_ip_unique_services":31,"target_ip_pkts_total":3134263,"target_ip_bytes_total":4562931101,"source_flow_count":290,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":3134158,"source_bytes_total":4562907433,"pkts_total":16464,"bytes_total":23968689,"mean_pkt_size":1455.824162,"bytes_per_pkt_total":1455.824162,"bytes_per_pkt_fwd":1455.824162,"pps_fwd":16.487602844002822,"pps_bwd":0.0,"pps_total":16.487602844002822,"bps_fwd":24003.050590586685,"bps_bwd":0.0,"bps_total":24003.050590586685,"fwd_only_duration":998.5684490203856,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.041347407,"flow_share_of_target_service_bytes":0.041346353,"flow_share_of_target_ip_pkts":0.00525291,"flow_share_of_target_ip_bytes":0.005252915,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042517007,"psh_fraction":0.042517007,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"11|6|anon_ip_21|anon_ip_2|443|49800","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":10,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49805,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":12162,"bytes_fwd":17707725,"duration":998.116267,"pkt_size_std":1.3328981951821732,"pkt_size_min":1309,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.5060845255714,"mean_iat_int_ns":28931.09703149412,"iat_std_int_ns":142261.53624072592,"iat_min_int_ns":19.0,"iat_max_int_ns":1213653.0,"latency_min":1379.0,"latency_max":1502.0,"latency_std":9.131906481,"syn_count_fwd":0,"ack_count_fwd":12162,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":520,"urg_count_fwd":0,"small_pkt_fraction_total":0.0,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.406923203,"queue_occupancy_std":4.175904612716485,"queue_occupancy_max":38.0,"truncated_udp_fraction":0.0,"target_service_flow_count":85,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":1012141,"target_service_bytes_total":1473553116,"target_ip_flow_count":789,"target_ip_unique_peer_ips":18,"target_ip_unique_peer_ports":5,"target_ip_unique_services":32,"target_ip_pkts_total":8456424,"target_ip_bytes_total":12311343188,"source_flow_count":725,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8456328,"source_bytes_total":12311316809,"pkts_total":12162,"bytes_total":17707725,"mean_pkt_size":1455.9879131721757,"bytes_per_pkt_total":1455.9879131721757,"bytes_per_pkt_fwd":1455.9879131721757,"pps_fwd":12.184953198860068,"pps_bwd":0.0,"pps_total":12.184953198860068,"bps_fwd":17741.144580108896,"bps_bwd":0.0,"bps_total":17741.144580108896,"fwd_only_duration":998.116267,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.012016112,"flow_share_of_target_service_bytes":0.012017025,"flow_share_of_target_ip_pkts":0.001438197,"flow_share_of_target_ip_bytes":0.001438326,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042756126,"psh_fraction":0.042756126,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"10|6|anon_ip_21|anon_ip_2|443|49805","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":6,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49802,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":4747,"bytes_fwd":6910266,"duration":139.1477508544922,"pkt_size_std":19.824184665192583,"pkt_size_min":90,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.2441542026545,"mean_iat_int_ns":29316.95533080489,"iat_std_int_ns":142697.84913763884,"iat_min_int_ns":20.0,"iat_max_int_ns":1142939.0,"latency_min":1379.0,"latency_max":1486.0,"latency_std":8.479047960987419,"syn_count_fwd":0,"ack_count_fwd":4747,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":203,"urg_count_fwd":0,"small_pkt_fraction_total":0.000210659,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.495892142,"queue_occupancy_std":4.11711503,"queue_occupancy_max":34.0,"truncated_udp_fraction":0.0,"target_service_flow_count":100,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":1018326,"target_service_bytes_total":1482550037,"target_ip_flow_count":800,"target_ip_unique_peer_ips":16,"target_ip_unique_peer_ports":3,"target_ip_unique_services":32,"target_ip_pkts_total":8259226,"target_ip_bytes_total":12024269836,"source_flow_count":736,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8259131,"source_bytes_total":12024250804,"pkts_total":4747,"bytes_total":6910266,"mean_pkt_size":1455.7122393090374,"bytes_per_pkt_total":1455.7122393090374,"bytes_per_pkt_fwd":1455.7122393090374,"pps_fwd":34.114816594944266,"pps_bwd":0.0,"pps_total":34.114816594944266,"bps_fwd":49661.35605904342,"bps_bwd":0.0,"bps_total":49661.35605904342,"fwd_only_duration":139.1477508544922,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.004661572,"flow_share_of_target_service_bytes":0.004661068,"flow_share_of_target_ip_pkts":0.000574751,"flow_share_of_target_ip_bytes":0.000574693,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042763851,"psh_fraction":0.042763851,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"6|6|anon_ip_21|anon_ip_2|443|49802","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":5,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49798,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":11550,"bytes_fwd":16814054,"duration":390.2620129585266,"pkt_size_std":17.04120583265499,"pkt_size_min":90,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.9009523809525,"mean_iat_int_ns":33794.48160013854,"iat_std_int_ns":536720.6583312819,"iat_min_int_ns":12.0,"iat_max_int_ns":54999292.0,"latency_min":1343.0,"latency_max":1504.0,"latency_std":9.801328161294975,"syn_count_fwd":0,"ack_count_fwd":11550,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":495,"urg_count_fwd":0,"small_pkt_fraction_total":8.658008658008658e-05,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.577662337662336,"queue_occupancy_std":4.220664858923547,"queue_occupancy_max":39.0,"truncated_udp_fraction":0.0,"target_service_flow_count":75,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":873602,"target_service_bytes_total":1271850177,"target_ip_flow_count":627,"target_ip_unique_peer_ips":13,"target_ip_unique_peer_ports":2,"target_ip_unique_services":30,"target_ip_pkts_total":6763161,"target_ip_bytes_total":9846167106,"source_flow_count":564,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":6763066,"source_bytes_total":9846146277,"pkts_total":11550,"bytes_total":16814054,"mean_pkt_size":1455.7622510822512,"bytes_per_pkt_total":1455.7622510822512,"bytes_per_pkt_fwd":1455.7622510822512,"pps_fwd":29.59550152586188,"pps_bwd":0.0,"pps_total":29.59550152586188,"bps_fwd":43084.01392319688,"bps_bwd":0.0,"bps_total":43084.01392319688,"fwd_only_duration":390.2620129585266,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.013221124,"flow_share_of_target_service_bytes":0.013220153,"flow_share_of_target_ip_pkts":0.001707781,"flow_share_of_target_ip_bytes":0.001707675,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042857143,"psh_fraction":0.042857143,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"5|6|anon_ip_21|anon_ip_2|443|49798","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":9,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49801,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":7960,"bytes_fwd":11589613,"duration":998.0863661766052,"pkt_size_std":1.6475307129576606,"pkt_size_min":1309,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.5282663316582,"mean_iat_int_ns":28879.86958160573,"iat_std_int_ns":142882.1587857389,"iat_min_int_ns":19.0,"iat_max_int_ns":1263337.0,"latency_min":1379.0,"latency_max":1525.0,"latency_std":8.965831567013268,"syn_count_fwd":0,"ack_count_fwd":7960,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":339,"urg_count_fwd":0,"small_pkt_fraction_total":0.0,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.530276381909548,"queue_occupancy_std":4.201081210914455,"queue_occupancy_max":41.0,"truncated_udp_fraction":0.0,"target_service_flow_count":93,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":1043912,"target_service_bytes_total":1519789223,"target_ip_flow_count":785,"target_ip_unique_peer_ips":18,"target_ip_unique_peer_ports":4,"target_ip_unique_services":34,"target_ip_pkts_total":8176706,"target_ip_bytes_total":11904036266,"source_flow_count":716,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8176617,"source_bytes_total":11904020083,"pkts_total":7960,"bytes_total":11589613,"mean_pkt_size":1455.9815326633166,"bytes_per_pkt_total":1455.9815326633166,"bytes_per_pkt_fwd":1455.9815326633166,"pps_fwd":7.975261730598098,"pps_bwd":0.0,"pps_total":7.975261730598098,"bps_fwd":11611.833797907317,"bps_bwd":0.0,"bps_total":11611.833797907317,"fwd_only_duration":998.0863661766052,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.007625164,"flow_share_of_target_service_bytes":0.007625803,"flow_share_of_target_ip_pkts":0.000973497,"flow_share_of_target_ip_bytes":0.000973587,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.04258794,"psh_fraction":0.04258794,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"9|6|anon_ip_21|anon_ip_2|443|49801","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":11,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49804,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":1,"bytes_fwd":90,"duration":0.0,"pkt_size_std":0.0,"pkt_size_min":90,"pkt_size_max":90,"mean_hop_count":1.0,"mean_hop_latency":1395.0,"mean_iat_int_ns":null,"iat_std_int_ns":null,"iat_min_int_ns":null,"iat_max_int_ns":null,"latency_min":1395.0,"latency_max":1395.0,"latency_std":0.0,"syn_count_fwd":0,"ack_count_fwd":1,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":1,"urg_count_fwd":0,"small_pkt_fraction_total":1.0,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":14.0,"queue_occupancy_std":0.0,"queue_occupancy_max":14.0,"truncated_udp_fraction":0.0,"target_service_flow_count":35,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":379128,"target_service_bytes_total":551963140,"target_ip_flow_count":340,"target_ip_unique_peer_ips":14,"target_ip_unique_peer_ports":3,"target_ip_unique_services":31,"target_ip_pkts_total":3134263,"target_ip_bytes_total":4562931101,"source_flow_count":290,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":3134158,"source_bytes_total":4562907433,"pkts_total":1,"bytes_total":90,"mean_pkt_size":90.0,"bytes_per_pkt_total":90.0,"bytes_per_pkt_fwd":90.0,"pps_fwd":null,"pps_bwd":null,"pps_total":null,"bps_fwd":null,"bps_bwd":null,"bps_total":null,"fwd_only_duration":0.0,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":2.637631617817729e-06,"flow_share_of_target_service_bytes":1.630543662752553e-07,"flow_share_of_target_ip_pkts":3.190542720888452e-07,"flow_share_of_target_ip_bytes":1.9724163702641892e-08,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":1.0,"psh_fraction":1.0,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"11|6|anon_ip_21|anon_ip_2|443|49804","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":7,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49803,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":2746,"bytes_fwd":3996810,"duration":158.67792510986328,"pkt_size_std":26.06281617172445,"pkt_size_min":90,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.4512017479972,"mean_iat_int_ns":57804.84517,"iat_std_int_ns":1521029.894562919,"iat_min_int_ns":20.0,"iat_max_int_ns":78876528.0,"latency_min":1343.0,"latency_max":1481.0,"latency_std":9.047297444748162,"syn_count_fwd":0,"ack_count_fwd":2746,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":118,"urg_count_fwd":0,"small_pkt_fraction_total":0.000364166,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.364530225782955,"queue_occupancy_std":4.020436923167067,"queue_occupancy_max":35.0,"truncated_udp_fraction":0.0,"target_service_flow_count":91,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":995724,"target_service_bytes_total":1449645786,"target_ip_flow_count":785,"target_ip_unique_peer_ips":15,"target_ip_unique_peer_ports":2,"target_ip_unique_services":30,"target_ip_pkts_total":8107644,"target_ip_bytes_total":11803486710,"source_flow_count":712,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8107534,"source_bytes_total":11803453786,"pkts_total":2746,"bytes_total":3996810,"mean_pkt_size":1455.502549162418,"bytes_per_pkt_total":1455.502549162418,"bytes_per_pkt_fwd":1455.502549162418,"pps_fwd":17.30549475044346,"pps_bwd":0.0,"pps_total":17.30549475044346,"bps_fwd":25188.191723787306,"bps_bwd":0.0,"bps_total":25188.191723787306,"fwd_only_duration":158.67792510986328,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.002757792,"flow_share_of_target_service_bytes":0.002757094,"flow_share_of_target_ip_pkts":0.000338693,"flow_share_of_target_ip_bytes":0.000338613,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042971595,"psh_fraction":0.042971595,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"7|6|anon_ip_21|anon_ip_2|443|49803","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+{"timeframe_id":6,"proto":6,"ip_a":"anon_ip_21","ip_b":"anon_ip_2","port_a":443,"port_b":49799,"pkts_bwd":0,"bytes_bwd":0,"syn_count_bwd":0,"syn_ratio_bwd":0.0,"ack_count_bwd":0,"ack_ratio_bwd":0.0,"fin_count_bwd":0,"fin_ratio_bwd":0.0,"rst_count_bwd":0,"rst_ratio_bwd":0.0,"psh_count_bwd":0,"psh_ratio_bwd":0.0,"urg_count_bwd":0,"urg_ratio_bwd":0.0,"truncated_ip_fraction":1.0,"pkts_fwd":14883,"bytes_fwd":21669501,"duration":430.0086939334869,"pkt_size_std":1.2049180302007956,"pkt_size_min":1309,"pkt_size_max":1456,"mean_hop_count":1.0,"mean_hop_latency":1389.412282469932,"mean_iat_int_ns":28894.67934417417,"iat_std_int_ns":142286.07955890897,"iat_min_int_ns":12.0,"iat_max_int_ns":1497404.0,"latency_min":1380.0,"latency_max":1513.0,"latency_std":8.700277890225511,"syn_count_fwd":0,"ack_count_fwd":14883,"fin_count_fwd":0,"rst_count_fwd":0,"psh_count_fwd":634,"urg_count_fwd":0,"small_pkt_fraction_total":0.0,"tiny_pkt_fraction_total":0.0,"queue_occupancy_mean":9.433447557616072,"queue_occupancy_std":4.062410629831231,"queue_occupancy_max":37.0,"truncated_udp_fraction":0.0,"target_service_flow_count":96,"target_service_unique_peer_ips":1,"target_service_unique_peer_ports":1,"target_service_pkts_total":1056619,"target_service_bytes_total":1538307103,"target_ip_flow_count":800,"target_ip_unique_peer_ips":16,"target_ip_unique_peer_ports":3,"target_ip_unique_services":32,"target_ip_pkts_total":8259226,"target_ip_bytes_total":12024269836,"source_flow_count":736,"source_unique_target_ips":1,"source_unique_target_ports":8,"source_unique_peer_ports":1,"source_pkts_total":8259131,"source_bytes_total":12024250804,"pkts_total":14883,"bytes_total":21669501,"mean_pkt_size":1455.9901229590807,"bytes_per_pkt_total":1455.9901229590807,"bytes_per_pkt_fwd":1455.9901229590807,"pps_fwd":34.61092812765799,"pps_bwd":0.0,"pps_total":34.61092812765799,"bps_fwd":50393.16950031667,"bps_bwd":0.0,"bps_total":50393.16950031667,"fwd_only_duration":430.0086939334869,"fwd_share_pkts":1.0,"fwd_share_bytes":1.0,"reverse_pkt_fraction":0.0,"reverse_byte_fraction":0.0,"pkts_bwd_zero":1,"bytes_bwd_zero":1,"has_response":0,"is_fwd_only":1,"is_bwd_only":0,"syn_fraction_fwd":0.0,"syn_ack_gap":0,"flow_share_of_target_service_pkts":0.014085493,"flow_share_of_target_service_bytes":0.01408659,"flow_share_of_target_ip_pkts":0.001801985,"flow_share_of_target_ip_bytes":0.001802147,"syn_ratio_fwd":0.0,"syn_fraction":0.0,"syn_no_reverse":0,"ack_ratio_fwd":1.0,"ack_fraction":1.0,"ack_no_reverse":1,"fin_ratio_fwd":0.0,"fin_fraction":0.0,"rst_ratio_fwd":0.0,"rst_fraction":0.0,"psh_ratio_fwd":0.042598938,"psh_fraction":0.042598938,"psh_no_reverse":1,"urg_ratio_fwd":0.0,"urg_fraction":0.0,"flow_key":"6|6|anon_ip_21|anon_ip_2|443|49799","pkt_ratio_fwd_bwd":null,"byte_ratio_fwd_bwd":null,"bytes_per_pkt_bwd":null,"bytes_per_pkt_gap":null,"is_attack":"True"}
+
+5. THE 113 FIELDS, IN THE ORDER YOU WRITE THEM
+"you choose" = pick a realistic value for this attack.
+"=" = calculate it exactly from fields earlier in the same record.
+"always" = write exactly that value.
+1. timeframe_id (whole number) - always the timeframe given at the end
+2. proto (whole number) - always 6
+3. ip_a (text) - always anon_ip_21
+4. ip_b (text) - always anon_ip_2
+5. port_a (whole number) - always 443
+6. port_b (whole number) - you choose: one of the 8 attacked ports, 49798 to 49805
+7. pkts_bwd (whole number) - always 0
+8. bytes_bwd (whole number) - always 0
+9. syn_count_bwd (whole number) - always 0
+10. syn_ratio_bwd (decimal) - always 0
+11. ack_count_bwd (whole number) - always 0
+12. ack_ratio_bwd (decimal) - always 0
+13. fin_count_bwd (whole number) - always 0
+14. fin_ratio_bwd (decimal) - always 0
+15. rst_count_bwd (whole number) - always 0
+16. rst_ratio_bwd (decimal) - always 0
+17. psh_count_bwd (whole number) - always 0
+18. psh_ratio_bwd (decimal) - always 0
+19. urg_count_bwd (whole number) - always 0
+20. urg_ratio_bwd (decimal) - always 0
+21. truncated_ip_fraction (decimal) - always 1
+22. pkts_fwd (whole number) - you choose: packets the source sent in this flow
+23. bytes_fwd (whole number) - you choose: bytes the source sent in this flow
+24. duration (decimal) - you choose: seconds from first to last packet (0 if only one packet)
+25. pkt_size_std (decimal) - you choose: spread of packet sizes (bytes)
+26. pkt_size_min (whole number) - you choose: smallest packet (bytes)
+27. pkt_size_max (whole number) - you choose: largest packet (bytes)
+28. mean_hop_count (decimal) - always 1
+29. mean_hop_latency (decimal) - you choose: INT average hop latency
+30. mean_iat_int_ns (decimal) - you choose: average time between packets (ns)
+31. iat_std_int_ns (decimal) - you choose: spread of time between packets (ns)
+32. iat_min_int_ns (decimal) - you choose: shortest time between packets (ns)
+33. iat_max_int_ns (decimal) - you choose: longest time between packets (ns)
+34. latency_min (decimal) - you choose: INT lowest hop latency
+35. latency_max (decimal) - you choose: INT highest hop latency
+36. latency_std (decimal) - you choose: INT spread of hop latency
+37. syn_count_fwd (whole number) - you choose: packets with SYN
+38. ack_count_fwd (whole number) - = pkts_fwd (every attack packet has ACK)
+39. fin_count_fwd (whole number) - always 0
+40. rst_count_fwd (whole number) - always 0
+41. psh_count_fwd (whole number) - you choose: packets with PSH
+42. urg_count_fwd (whole number) - always 0
+43. small_pkt_fraction_total (decimal) - you choose: share of small packets (0-1)
+44. tiny_pkt_fraction_total (decimal) - always 0
+45. queue_occupancy_mean (decimal) - you choose: INT average switch queue occupancy
+46. queue_occupancy_std (decimal) - you choose: INT spread of queue occupancy
+47. queue_occupancy_max (decimal) - you choose: INT highest queue occupancy
+48. truncated_udp_fraction (decimal) - always 0
+49. target_service_flow_count (whole number) - you choose: flows hitting this host+port this timeframe (all sources)
+50. target_service_unique_peer_ips (whole number) - always 1
+51. target_service_unique_peer_ports (whole number) - always 1
+52. target_service_pkts_total (whole number) - you choose: packets to this host+port this timeframe (all sources)
+53. target_service_bytes_total (whole number) - you choose: bytes to this host+port this timeframe (all sources)
+54. target_ip_flow_count (whole number) - you choose: flows to the monitored host this timeframe (all sources)
+55. target_ip_unique_peer_ips (whole number) - you choose: different sources sending to the host this timeframe
+56. target_ip_unique_peer_ports (whole number) - you choose: different source ports sending to the host
+57. target_ip_unique_services (whole number) - you choose: different ports hit on the host
+58. target_ip_pkts_total (whole number) - you choose: packets to the host this timeframe (all sources)
+59. target_ip_bytes_total (whole number) - you choose: bytes to the host this timeframe (all sources)
+60. source_flow_count (whole number) - you choose: flows this source sent this timeframe
+61. source_unique_target_ips (whole number) - always 1
+62. source_unique_target_ports (whole number) - always 8
+63. source_unique_peer_ports (whole number) - always 1
+64. source_pkts_total (whole number) - you choose: packets this source sent this timeframe (all its flows)
+65. source_bytes_total (whole number) - you choose: bytes this source sent this timeframe (all its flows)
+66. pkts_total (whole number) - = pkts_fwd + pkts_bwd
+67. bytes_total (whole number) - = bytes_fwd + bytes_bwd
+68. mean_pkt_size (decimal) - = bytes_total / pkts_total
+69. bytes_per_pkt_total (decimal) - = bytes_total / pkts_total
+70. bytes_per_pkt_fwd (decimal) - = bytes_fwd / pkts_fwd
+71. pps_fwd (decimal) - = pkts_fwd / duration  (NA if duration is 0)
+72. pps_bwd (decimal) - = pkts_bwd / duration  (NA if duration is 0)
+73. pps_total (decimal) - = pkts_total / duration  (NA if duration is 0)
+74. bps_fwd (decimal) - = bytes_fwd / duration  (NA if duration is 0)
+75. bps_bwd (decimal) - = bytes_bwd / duration  (NA if duration is 0)
+76. bps_total (decimal) - = bytes_total / duration  (NA if duration is 0)
+77. fwd_only_duration (decimal) - = duration
+78. fwd_share_pkts (decimal) - = pkts_fwd / pkts_total
+79. fwd_share_bytes (decimal) - = bytes_fwd / bytes_total
+80. reverse_pkt_fraction (decimal) - = pkts_bwd / pkts_total
+81. reverse_byte_fraction (decimal) - = bytes_bwd / bytes_total
+82. pkts_bwd_zero (whole number) - = 1 if pkts_bwd is 0, otherwise 0
+83. bytes_bwd_zero (whole number) - = 1 if bytes_bwd is 0, otherwise 0
+84. has_response (whole number) - = 1 if pkts_bwd > 0, otherwise 0
+85. is_fwd_only (whole number) - = 1 if pkts_fwd > 0 and pkts_bwd is 0, otherwise 0
+86. is_bwd_only (whole number) - = 1 if pkts_bwd > 0 and pkts_fwd is 0, otherwise 0
+87. syn_fraction_fwd (decimal) - = syn_count_fwd / pkts_fwd
+88. syn_ack_gap (whole number) - = syn_count_fwd - syn_count_bwd
+89. flow_share_of_target_service_pkts (decimal) - = pkts_total / target_service_pkts_total
+90. flow_share_of_target_service_bytes (decimal) - = bytes_total / target_service_bytes_total
+91. flow_share_of_target_ip_pkts (decimal) - = pkts_total / target_ip_pkts_total
+92. flow_share_of_target_ip_bytes (decimal) - = bytes_total / target_ip_bytes_total
+93. syn_ratio_fwd (decimal) - = syn_count_fwd / pkts_fwd
+94. syn_fraction (decimal) - = (syn_count_fwd + syn_count_bwd) / pkts_total
+95. syn_no_reverse (whole number) - = 1 if syn_count_fwd > 0 and pkts_bwd is 0, otherwise 0
+96. ack_ratio_fwd (decimal) - = ack_count_fwd / pkts_fwd
+97. ack_fraction (decimal) - = (ack_count_fwd + ack_count_bwd) / pkts_total
+98. ack_no_reverse (whole number) - = 1 if ack_count_fwd > 0 and pkts_bwd is 0, otherwise 0
+99. fin_ratio_fwd (decimal) - = fin_count_fwd / pkts_fwd
+100. fin_fraction (decimal) - = (fin_count_fwd + fin_count_bwd) / pkts_total
+101. rst_ratio_fwd (decimal) - = rst_count_fwd / pkts_fwd
+102. rst_fraction (decimal) - = (rst_count_fwd + rst_count_bwd) / pkts_total
+103. psh_ratio_fwd (decimal) - = psh_count_fwd / pkts_fwd
+104. psh_fraction (decimal) - = (psh_count_fwd + psh_count_bwd) / pkts_total
+105. psh_no_reverse (whole number) - = 1 if psh_count_fwd > 0 and pkts_bwd is 0, otherwise 0
+106. urg_ratio_fwd (decimal) - = urg_count_fwd / pkts_fwd
+107. urg_fraction (decimal) - = (urg_count_fwd + urg_count_bwd) / pkts_total
+108. flow_key (text) - = timeframe_id|proto|ip_a|ip_b|port_a|port_b
+109. pkt_ratio_fwd_bwd (decimal) - always NA
+110. byte_ratio_fwd_bwd (decimal) - always NA
+111. bytes_per_pkt_bwd (decimal) - always NA
+112. bytes_per_pkt_gap (decimal) - always NA
+113. is_attack (text) - always True
+
+6. RULES FOR EMPTY VALUES
+- Write NA for empty values, never leave a field blank.
+- duration is 0 exactly when pkts_fwd is 1, and above 0 when pkts_fwd is 2 or more.
+- pps_* and bps_* fields are NA exactly when duration is 0.
+- The 4 time-between-packets fields (mean_iat_int_ns, iat_std_int_ns, iat_min_int_ns, iat_max_int_ns) are all NA when pkts_fwd is 1; they may be NA when pkts_fwd is 2; they must be numbers when pkts_fwd is 3 or more.
+- The 8 INT fields (mean_hop_count, mean_hop_latency, latency_min, latency_max, latency_std, queue_occupancy_mean, queue_occupancy_std, queue_occupancy_max) are always filled, also for single-packet flows. mean_hop_count is 1.
+
+7. RULES TO KEEP RECORDS REALISTIC
+- No negative numbers.
+- 0 <= small_pkt_fraction_total <= 1
+- 0 <= tiny_pkt_fraction_total <= 1
+- 0 <= truncated_udp_fraction <= 1
+- pkt_size_min <= mean_pkt_size <= pkt_size_max
+- iat_min_int_ns <= mean_iat_int_ns <= iat_max_int_ns
+- latency_min <= mean_hop_latency <= latency_max
+- syn_count_fwd <= pkts_fwd
+- ack_count_fwd <= pkts_fwd
+- fin_count_fwd <= pkts_fwd
+- rst_count_fwd <= pkts_fwd
+- psh_count_fwd <= pkts_fwd
+- urg_count_fwd <= pkts_fwd
+- mean_hop_count = 1
+- source_flow_count = number of flows from the same ip_a in the same timeframe_id
+- source_pkts_total = sum of pkts_total over those flows
+- source_bytes_total = sum of bytes_total over those flows
+- pkts_fwd == 1  <=>  duration == 0
+- pkts_total <= target_service_pkts_total <= target_ip_pkts_total
+- pkts_total <= source_pkts_total <= target_ip_pkts_total
+- target_service_flow_count <= target_ip_flow_count
+
+8. OUTPUT FORMAT
+- Reply with one JSON object: {"records": [ ... ]}, holding exactly the number of records requested at the end.
+- Each record is an object with all 113 fields of section 5 as keys.
+- Numbers as JSON numbers. ip_a, ip_b, flow_key and is_attack as strings (is_attack is "True").
+- Wherever this prompt says NA, write null.
+- Each record must be different and fit its phase of the attack.
+- Never repeat a record from section 4; every record must be a new flow.
+
+NOW GENERATE: {K} attack records for timeframe {TIMEFRAME} ({PHASE}).
